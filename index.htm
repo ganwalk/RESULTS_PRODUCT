@@ -94,6 +94,46 @@
             background-position: 100% 0;
             animation: write-effect 1.2s ease-out forwards;
         }
+
+        /* --- Setas de Deslize Animadas --- */
+        @keyframes bounceLeft {
+            0%, 100% { transform: translateX(0); opacity: 0.9; }
+            50% { transform: translateX(-5px); opacity: 0.4; }
+        }
+        @keyframes bounceRight {
+            0%, 100% { transform: translateX(0); opacity: 0.9; }
+            50% { transform: translateX(5px); opacity: 0.4; }
+        }
+        .swipe-arrow-left { animation: bounceLeft 1s ease-in-out infinite; }
+        .swipe-arrow-right { animation: bounceRight 1s ease-in-out infinite; }
+
+        /* --- Dots do Carrossel --- */
+        .scroll-dot {
+            height: 8px;
+            border-radius: 4px;
+            transition: all 0.35s ease;
+        }
+        .scroll-dot.active {
+            width: 22px;
+            background-color: #fdf6e3;
+        }
+        .scroll-dot.inactive {
+            width: 8px;
+            background-color: rgba(253, 246, 227, 0.3);
+            border: 1px solid rgba(253, 246, 227, 0.5);
+        }
+
+        /* --- Toast de Feedback --- */
+        @keyframes toastIn {
+            from { opacity: 0; transform: translate(-50%, 16px); }
+            to   { opacity: 1; transform: translate(-50%, 0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translate(-50%, 0); }
+            to   { opacity: 0; transform: translate(-50%, 16px); }
+        }
+        .toast-enter { animation: toastIn 0.25s ease-out forwards; }
+        .toast-exit  { animation: toastOut 0.25s ease-in forwards; }
     </style>
 </head>
 <body class="selection:bg-amber-500/30 text-[#451a03]">
@@ -515,12 +555,23 @@
                 ${!isCured ? `
                 <div class="pt-2 pb-12 overflow-hidden z-10 relative">
                     <h3 class="text-center text-[#fdf6e3] font-bold uppercase tracking-widest text-sm md:text-lg mb-2 sm:mb-4 drop-shadow-md px-4">Selecione a Prescrição</h3>
-                    <div class="md:hidden text-center text-[#e6d5a1] text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-2 animate-pulse opacity-80">
-                        ← Deslize para explorar o leque →
+                    <div class="md:hidden flex items-center justify-center gap-3 mb-3">
+                        <span class="swipe-arrow-left text-[#e6d5a1]">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><polyline points="15 18 9 12 15 6"/></svg>
+                        </span>
+                        <span class="text-[#e6d5a1] text-[10px] sm:text-xs font-bold uppercase tracking-widest">Deslize para explorar</span>
+                        <span class="swipe-arrow-right text-[#e6d5a1]">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
                     </div>
                     <!-- pt-8 e pb-12 garantem que as cartas possam rodar e subir no hover sem cortar -->
-                    <div class="flex overflow-x-auto md:grid md:grid-cols-3 gap-0 md:gap-6 hide-scrollbar snap-x snap-mandatory px-12 sm:px-16 md:px-2 pt-8 pb-12 -mx-4 md:mx-0">
+                    <div id="recipe-carousel" class="flex overflow-x-auto md:grid md:grid-cols-3 gap-0 md:gap-6 hide-scrollbar snap-x snap-mandatory px-12 sm:px-16 md:px-2 pt-8 pb-12 -mx-4 md:mx-0">
                         ${optionsHTML}
+                    </div>
+                    <div class="md:hidden flex items-center justify-center gap-2 mt-1 pb-2" id="carousel-dots">
+                        <div class="scroll-dot active"></div>
+                        <div class="scroll-dot inactive"></div>
+                        <div class="scroll-dot inactive"></div>
                     </div>
                 </div>` : `
                 <!-- Botão de Próximo Passo -->
@@ -531,6 +582,42 @@
                 </div>
                 `}
             </div>`;
+
+            // Attach carousel scroll listener to update dots
+            setTimeout(() => {
+                const carousel = document.getElementById('recipe-carousel');
+                const dots = document.querySelectorAll('#carousel-dots .scroll-dot');
+                if (!carousel || !dots.length) return;
+                carousel.addEventListener('scroll', () => {
+                    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                    if (maxScroll <= 0) return;
+                    const fraction = carousel.scrollLeft / maxScroll;
+                    const activeIndex = Math.round(fraction * (dots.length - 1));
+                    dots.forEach((d, i) => {
+                        d.classList.toggle('active', i === activeIndex);
+                        d.classList.toggle('inactive', i !== activeIndex);
+                    });
+                }, { passive: true });
+            }, 0);
+        }
+
+        function showToast(msg, type) {
+            const existing = document.getElementById('feedback-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'feedback-toast';
+            const color = type === 'error' ? 'bg-red-700' : 'bg-green-700';
+            toast.className = `fixed bottom-8 left-1/2 ${color} text-white px-5 py-3 rounded-full font-bold text-sm shadow-2xl z-50 toast-enter flex items-center gap-2 whitespace-nowrap`;
+            toast.style.transform = 'translateX(-50%)';
+            toast.innerHTML = type === 'error'
+                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${msg}`
+                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 shrink-0"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 280);
+            }, 1100);
         }
 
         // --- Funções Lógicas de Interação ---
@@ -548,14 +635,16 @@
             if (opt.type === 'correct') {
                 isCured = true;
                 renderApp();
+                showToast('Prescrição correta!', 'success');
             } else {
                 glitchError = true;
                 renderApp();
+                showToast('Prescrição incorreta! Tente outra opção.', 'error');
                 setTimeout(() => {
                     glitchError = false;
                     selectedOptionId = null;
                     renderApp();
-                }, 1200); 
+                }, 1200);
             }
         };
 
