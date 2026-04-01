@@ -426,27 +426,17 @@
             document.body.classList.remove('bg-final');
             const s = scenarios[currentStep];
             
-            // Loop para criar o carrossel "Formato Leque" de Receitas
+            // Loop para criar o carrossel de Receitas
             let optionsHTML = currentShuffledOptions.map((opt, i) => {
                 const isSel = selectedOptionId === opt.id;
                 const isDisabled = selectedOptionId !== null;
-                
-                // Configurações do Leque (Fan) para Mobile
-                const fanClasses = [
-                    '-rotate-6 translate-y-4 md:rotate-0 md:translate-y-0',
-                    'rotate-0 z-10',
-                    'rotate-6 translate-y-4 md:rotate-0 md:translate-y-0'
-                ];
-                
-                // Sobreposição inteligente para dar o efeito de mão de cartas no telemóvel
-                const overlapClass = i > 0 ? '-ml-16 sm:-ml-24 md:ml-0' : '';
-                
+
                 // Estados e Hovers
-                const hoverClasses = !isDisabled ? 'hover:rotate-0 hover:-translate-y-6 hover:z-30 hover:scale-105' : '';
-                const selectedClasses = isSel ? '!rotate-0 !-translate-y-6 !z-40 scale-105' : '';
+                const hoverClasses = !isDisabled ? 'hover:-translate-y-3 hover:z-30 hover:scale-[1.02]' : '';
+                const selectedClasses = isSel ? '!-translate-y-3 !z-40 scale-[1.02]' : '';
 
                 return `
-                <div class="group w-[75vw] sm:w-[320px] md:w-auto shrink-0 snap-center flex flex-col items-center cursor-pointer transition-all duration-500 origin-bottom ${isDisabled && !isSel ? 'opacity-50 grayscale' : ''} ${fanClasses[i]} ${overlapClass} ${hoverClasses} ${selectedClasses}" onclick="${!isDisabled ? `window.select('${opt.id}')` : ''}">
+                <div class="group w-[82vw] sm:w-[320px] md:w-auto shrink-0 snap-center flex flex-col items-center cursor-pointer transition-all duration-300 ${isDisabled && !isSel ? 'opacity-50 grayscale' : ''} ${hoverClasses} ${selectedClasses}" onclick="${!isDisabled ? `window.select('${opt.id}')` : ''}">
                     
                     <!-- Receituário Médico -->
                     <div class="w-full h-full bg-[#fcfcfc] rounded-md shadow-[0_6px_15px_rgba(0,0,0,0.4)] border border-[#cbd5e1] relative flex flex-col overflow-hidden transition-all duration-300 ${!isDisabled ? 'group-hover:shadow-[0_12px_25px_rgba(0,0,0,0.5)]' : ''}">
@@ -564,8 +554,7 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><polyline points="9 18 15 12 9 6"/></svg>
                         </span>
                     </div>
-                    <!-- pt-8 e pb-12 garantem que as cartas possam rodar e subir no hover sem cortar -->
-                    <div id="recipe-carousel" class="flex overflow-x-auto md:grid md:grid-cols-3 gap-0 md:gap-6 hide-scrollbar snap-x snap-mandatory px-12 sm:px-16 md:px-2 pt-8 pb-12 -mx-4 md:mx-0">
+                    <div id="recipe-carousel" class="flex overflow-x-auto md:grid md:grid-cols-3 gap-4 md:gap-6 hide-scrollbar snap-x snap-mandatory px-4 sm:px-6 md:px-2 pt-4 pb-8 -mx-4 md:mx-0">
                         ${optionsHTML}
                     </div>
                     <div class="md:hidden flex items-center justify-center gap-2 mt-1 pb-2" id="carousel-dots">
