@@ -490,13 +490,13 @@
                         ${scenarios.map((_, i) => `<div class="transition-all duration-300 rounded-full ${i < currentStep ? 'w-3 h-3 bg-[#8b5a2b]' : i === currentStep ? 'w-4 h-4 bg-[#fdf6e3] shadow-[0_0_8px_rgba(253,246,227,0.6)]' : 'w-3 h-3 bg-[#fdf6e3]/25 border border-[#fdf6e3]/30'}"></div>`).join('')}
                     </div>
                     <span class="text-[#fdf6e3]/60 text-sm font-mono uppercase tracking-widest">Cenário ${currentStep + 1} / ${scenarios.length}</span>
-                    <button onclick="document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()" class="text-[#fdf6e3]/40 hover:text-[#fdf6e3]/80 transition-colors p-1 rounded" title="Fullscreen (F)">
+                    <button onclick="window.toggleFullscreen()" class="text-[#fdf6e3]/40 hover:text-[#fdf6e3]/80 transition-colors p-1 rounded" title="Fullscreen (F)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                     </button>
                 </div>
 
                 <!-- Prancheta Médica / Prontuário Lado a Lado -->
-                <div class="bg-[#fdf6e3] rounded-b-xl sm:rounded-b-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] border-x border-b border-[#e6d5a1] relative transition-transform ${glitchError ? 'animate-shake' : ''} z-20 xl:flex-1 xl:min-h-0">
+                <div class="bg-[#fdf6e3] rounded-b-xl sm:rounded-b-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] border-x border-b border-[#e6d5a1] relative transition-transform ${glitchError ? 'animate-shake' : ''} z-20 xl:flex-1 xl:min-h-0 xl:overflow-hidden">
                     <div class="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0xLDFoMnYyaC0yeiIgZmlsbD0iIzAwMCIvPgo8L3N2Zz4=')] mix-blend-multiply rounded-b-3xl"></div>
 
                     <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-32 sm:w-40 h-8 sm:h-10 bg-gradient-to-b from-[#cbd5e1] to-[#94a3b8] border-b border-x border-[#64748b] rounded-b-xl shadow-lg flex items-center justify-center z-20">
@@ -506,12 +506,12 @@
                     <div class="p-4 sm:p-6 md:p-10 xl:p-10 pt-12 md:pt-16 xl:pt-14 relative z-10 flex flex-col md:flex-row items-center md:items-stretch gap-6 md:gap-10 xl:gap-12 xl:h-full">
 
                         <!-- Lado Esquerdo: Imagem do Jorginho Grande -->
-                        <div class="w-full md:w-1/2 flex items-center justify-center relative min-h-[250px] sm:min-h-[300px] md:min-h-[350px] xl:min-h-0">
+                        <div class="w-full md:w-1/2 flex items-center justify-center relative min-h-[250px] sm:min-h-[300px] md:min-h-[350px] xl:min-h-0 xl:overflow-hidden">
                             ${renderCatImage(s.visualState, isCured, glitchError)}
                         </div>
                         
                         <!-- Lado Direito: O Prontuário Médico -->
-                        <div class="w-full md:w-1/2 bg-white/60 p-4 sm:p-6 md:p-8 xl:p-10 rounded-sm border-2 border-[#8b5a2b]/20 shadow-inner flex flex-col justify-between relative z-0">
+                        <div class="w-full md:w-1/2 bg-white/60 p-4 sm:p-6 md:p-8 xl:p-10 rounded-md border-2 border-[#8b5a2b]/20 shadow-inner flex flex-col justify-between relative z-0">
 
                             <div class="border-b-2 border-[#8b5a2b]/30 pb-3 md:pb-4 mb-4 md:mb-6 flex flex-col items-center">
                                 <h2 class="text-xl sm:text-2xl md:text-3xl xl:text-5xl font-bold uppercase tracking-widest text-[#451a03] font-serif text-center">Prontuário</h2>
@@ -563,7 +563,7 @@
 
                 <!-- Receituário Médico (Oculto se Curado) -->
                 ${!isCured ? `
-                <div class="pt-2 pb-12 xl:pb-4 xl:pt-3 overflow-hidden z-10 relative xl:flex xl:flex-col">
+                <div class="pt-2 pb-12 xl:pb-4 xl:pt-3 overflow-hidden z-10 relative xl:flex xl:flex-col xl:h-full">
                     <h3 class="text-center text-[#fdf6e3] font-bold uppercase tracking-widest text-sm md:text-lg xl:text-2xl mb-2 sm:mb-4 xl:mb-3 drop-shadow-md px-4">Selecione a Prescrição</h3>
                     <div class="md:hidden flex items-center justify-center gap-3 mb-3">
                         <span class="swipe-arrow-left text-[#e6d5a1]">
@@ -690,6 +690,12 @@
             renderApp();
         };
 
+        // --- Fullscreen helper ---
+        window.toggleFullscreen = () => {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+            else document.exitFullscreen();
+        };
+
         // --- Teclado: navegação para apresentador (telão) ---
         document.addEventListener('keydown', (e) => {
             if (isLoading) return;
@@ -713,10 +719,7 @@
             }
 
             // Fullscreen: F
-            if (e.code === 'KeyF') {
-                if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
-                else document.exitFullscreen();
-            }
+            if (e.code === 'KeyF') window.toggleFullscreen();
         });
 
         // --- Botão Fullscreen (fixo, visível apenas em xl) ---
@@ -730,10 +733,7 @@
                 <svg id="fs-icon-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                 <svg id="fs-icon-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 hidden"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
                 <span id="fs-label">Tela Cheia</span>`;
-            btn.addEventListener('click', () => {
-                if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
-                else document.exitFullscreen();
-            });
+            btn.addEventListener('click', window.toggleFullscreen);
             document.addEventListener('fullscreenchange', () => {
                 const isFs = !!document.fullscreenElement;
                 document.getElementById('fs-icon-enter').classList.toggle('hidden', isFs);
